@@ -2,119 +2,275 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>에이전트 서비스 - 메인</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>에이전트 대화방 - 솔로지옥5 통합 최종본</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
+            --youtube-red: #FF0000;
+            --bg-color: #f9f9f9;
             --white: #ffffff;
             --text-main: #0f0f0f;
+            --text-sub: #606060;
+            --agent-bubble: #f2f2f2;
+            --user-bubble: #e2f7cb;
+            --drawer-width: 280px;
         }
 
-        body {
-            font-family: 'Noto Sans KR', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #e0e0e0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
+        /* 1. 바디 스크롤 방지 및 높이 고정 */
+        body { 
+            font-family: 'Noto Sans KR', sans-serif; 
+            margin: 0; 
+            background-color: #e0e0e0; 
+            display: flex; 
+            justify-content: center; 
+            height: 100vh; /* 브라우저 높이에 고정 */
+            overflow: hidden; 
+        }
+        
+        .mobile-container { 
+            width: 100%; 
+            max-width: 420px; 
+            height: 100%; /* 부모(body) 높이 상속 */
+            background-color: var(--white); 
+            display: flex; 
+            flex-direction: column; 
+            position: relative; 
+            box-shadow: 0 0 20px rgba(0,0,0,0.1); 
         }
 
-        .mobile-container {
-            width: 100%;
-            max-width: 420px;
-            height: 100vh;
-            background-color: var(--white);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
+        /* Drawer 스타일 (생략 없이 유지) */
+        .drawer-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; display: none; opacity: 0; transition: opacity 0.3s; }
+        .drawer-overlay.active { display: block; opacity: 1; }
+        .drawer { position: absolute; top: 0; left: calc(var(--drawer-width) * -1); width: var(--drawer-width); height: 100%; background: var(--white); z-index: 101; transition: left 0.3s ease; display: flex; flex-direction: column; }
+        .drawer.active { left: 0; }
+        .drawer-header { padding: 24px 20px; border-bottom: 1px solid #eee; flex-shrink: 0; }
+        .drawer-header h2 { margin: 0; font-size: 18px; color: var(--text-main); }
+        .drawer-content { flex: 1; padding: 10px 0; overflow-y: auto; }
+        .content-item { padding: 14px 20px; font-size: 15px; color: var(--text-main); cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: background 0.2s; }
+        .content-item:hover { background: #f0f0f0; }
+        .status-dot { width: 8px; height: 8px; background: #4CAF50; border-radius: 50%; }
+        .drawer-footer { padding: 20px; border-top: 1px solid #eee; flex-shrink: 0; }
+        .new-chat-btn { width: 100%; padding: 12px; border-radius: 8px; background: var(--text-main); color: white; border: none; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
 
-        .main-link {
-            display: block;
-            width: 100%;
-            height: 100%;
-            text-decoration: none;
-            position: relative;
-        }
+        /* Header 스타일 */
+        .header { display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid #eee; background: white; height: 60px; flex-shrink: 0; }
+        .header-left, .header-right { width: 40px; display: flex; align-items: center; justify-content: center; }
+        .menu-btn { background: none; border: none; padding: 0; cursor: pointer; }
+        .title-container { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .title { font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 2px; }
+        .sync-btn-box { background: #f0f0f0; border: 1px solid #ddd; padding: 2px 10px; border-radius: 12px; cursor: pointer; }
+        .sync-btn-box span { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--text-main); }
+        .profile-link { display: flex; align-items: center; text-decoration: none; }
+        .profile-link svg { width: 28px; height: 28px; fill: var(--text-main); }
 
-        .bg-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
+        /* Media Control 스타일 */
+        .media-control-section { padding: 10px 16px; background-color: var(--white); border-bottom: 1px solid #f0f0f0; flex-shrink: 0; }
+        .player-row { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+        .play-pause-btn { background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; }
+        .progress-wrapper { flex: 1; position: relative; height: 20px; display: flex; align-items: center; cursor: pointer; }
+        .progress-rail { width: 100%; height: 4px; background-color: rgba(0,0,0,0.1); border-radius: 2px; position: relative; }
+        .progress-fill { width: 50%; height: 100%; background-color: var(--youtube-red); border-radius: 2px; position: relative; }
+        .progress-handle { position: absolute; right: -7px; top: -5px; width: 14px; height: 14px; background-color: var(--youtube-red); border-radius: 50%; box-shadow: 0 0 4px rgba(0,0,0,0.3); }
+        .time-info { display: flex; justify-content: space-between; font-size: 12px; font-weight: 500; color: var(--text-main); }
 
-        .overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.6) 100%);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            padding: 40px 20px;
-            box-sizing: border-box;
-            color: white;
+        /* 2. 대화 영역 스크롤 고정 및 높이 확보 */
+        .chat-area { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 20px 16px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 16px; 
+            background-color: var(--bg-color); 
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch; /* iOS 부드러운 스크롤 */
         }
+        .message { display: flex; gap: 8px; max-width: 85%; animation: fadeIn 0.3s ease; }
+        .message.agent { align-self: flex-start; }
+        .message.user { align-self: flex-end; flex-direction: row-reverse; }
+        .avatar { width: 36px; height: 36px; border-radius: 50%; background-color: #ddd; flex-shrink: 0; }
+        .bubble { padding: 10px 14px; border-radius: 18px; font-size: 14px; line-height: 1.5; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .agent .bubble { background-color: var(--agent-bubble); border-top-left-radius: 2px; }
+        .user .bubble { background-color: var(--user-bubble); border-top-right-radius: 2px; }
 
-        .overlay h1 {
-            margin: 0;
-            font-size: 32px;
-            font-weight: 700;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        .overlay p {
-            margin: 10px 0 0;
-            font-size: 16px;
-            opacity: 0.9;
+        /* 3. 푸터 영역 하단 네비게이션바 대응 (SafeArea) */
+        .footer { 
+            padding: 12px 16px; 
+            /* env(safe-area-inset-bottom)을 사용하여 폰의 하단 바 높이만큼 자동으로 여백 확보 */
+            padding-bottom: calc(12px + env(safe-area-inset-bottom)); 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            border-top: 1px solid #eee; 
+            background: white; 
+            flex-shrink: 0; 
         }
-
-        .start-badge {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(255, 255, 255, 0.9);
-            color: var(--text-main);
-            padding: 12px 24px;
-            border-radius: 30px;
-            font-weight: 700;
-            font-size: 14px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            animation: pulse 2s infinite;
-            z-index: 10;
-        }
-
-        @keyframes pulse {
-            0% { transform: translate(-50%, -50%) scale(1); }
-            50% { transform: translate(-50%, -50%) scale(1.05); }
-            100% { transform: translate(-50%, -50%) scale(1); }
-        }
+        .input-box { flex: 1; background-color: #f2f2f2; border: none; padding: 12px 18px; border-radius: 24px; outline: none; font-size: 15px; }
+        .mic-btn { background: none; border: none; cursor: pointer; display: flex; align-items: center; padding: 0; }
+        .mic-btn svg { width: 24px; height: 24px; fill: var(--text-sub); }
+        .send-btn { background-color: #0f0f0f; color: white; border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; flex-shrink: 0; }
     </style>
 </head>
 <body>
 
 <div class="mobile-container">
-    <a href="media-ai-sample-1depth-20260212.html" class="main-link">
-        
-        <img src="Gemini_Generated_Image_ndufnnndufnnnduf.jpg" alt="솔로지옥5 메인" class="bg-image">
-
-        <div class="start-badge">화면을 터치하여 대화 시작</div>
-
-        <div class="overlay">
-            <h1>솔로지옥5</h1>
-            <p>미디어 AI와 함께 즐기세요</p>
+    <div class="drawer-overlay" id="overlay"></div>
+    <div class="drawer" id="drawer">
+        <div class="drawer-header"><h2>대화 중인 컨텐츠</h2></div>
+        <div class="drawer-content">
+            <div class="content-item" onclick="changeTitle('솔로지옥 5')"><span>솔로지옥 5</span><div class="status-dot"></div></div>
+            <div class="content-item" onclick="changeTitle('흑백요리사')"><span>흑백요리사</span></div>
+            <div class="content-item" onclick="changeTitle('오징어 게임 2')"><span>오징어 게임 2</span></div>
+            <div class="content-item" onclick="changeTitle('피지컬: 100 시즌3')"><span>피지컬: 100 시즌3</span></div>
+            <div class="content-item" onclick="changeTitle('환승연애 4')"><span>환승연애 4</span></div>
+            <div class="content-item" onclick="changeTitle('무한도전 레전드')"><span>무한도전 레전드</span></div>
+            <div class="content-item" onclick="changeTitle('지금 우리 학교는 2')"><span>지금 우리 학교는 2</span></div>
         </div>
-    </a>
+        <div class="drawer-footer">
+            <button class="new-chat-btn" onclick="alert('새로운 컨텐츠 대화를 시작합니다.')">
+                <svg width="18" height="18" fill="white" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                새로운 컨텐츠 대화하기
+            </button>
+        </div>
+    </div>
+
+    <header class="header">
+        <div class="header-left">
+            <button class="menu-btn" id="menuBtn">
+                <svg viewBox="0 0 24 24" width="24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"></path></svg>
+            </button>
+        </div>
+        <div class="title-container">
+            <div class="title" id="currentTitle">솔로지옥5</div>
+            <button class="sync-btn-box" id="syncBtn"><span>Sync</span></button>
+        </div>
+        <div class="header-right">
+            <a href="media-ai-sample-2depth-20260212.html" class="profile-link">
+                <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            </a>
+        </div>
+    </header>
+
+    <div class="media-control-section">
+        <div class="player-row">
+            <button class="play-pause-btn" id="playPauseBtn">
+                <svg id="playIcon" viewBox="0 0 24 24" width="28"><path d="M8 5v14l11-7z"/></svg>
+                <svg id="pauseIcon" viewBox="0 0 24 24" width="28" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+            <div class="progress-wrapper" id="progressWrapper">
+                <div class="progress-rail"><div class="progress-fill" id="progressFill"><div class="progress-handle"></div></div></div>
+            </div>
+        </div>
+        <div class="time-info"><span id="currentTime">01:00:00</span><span>02:00:00</span></div>
+    </div>
+
+    <main class="chat-area" id="chatArea">
+        <div class="message agent">
+            <div class="avatar"></div>
+            <div class="bubble">안녕하세요! '솔로지옥5' 영상을 동기화했습니다. 함께 보면서 이야기 나눠요! 😊</div>
+        </div>
+        <div class="message user">
+            <div class="bubble">방금 패널들이 한 말 들었어? 저 상황에서 저런 말은 좀 너무한 거 아냐?</div>
+        </div>
+        <div class="message agent">
+            <div class="avatar"></div>
+            <div class="bubble">맞아요. 출연자의 진심을 오해하는 것 같아 저도 조마조마하네요. 하지만 예능적 재미를 위한 코멘트 아닐까요?</div>
+        </div>
+        <div class="message user">
+            <div class="bubble">우와! 근데 지금 여자 출연자가 입은 하얀색 원피스 진짜 예쁘다. 정보 좀 알 수 있을까?</div>
+        </div>
+        <div class="message agent">
+            <div class="avatar"></div>
+            <div class="bubble">보는 눈이 있으시네요! 해당 제품은 '보헤미안 시크 스트로우' 라인의 린넨 원피스입니다.</div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <input type="text" id="userInput" class="input-box" placeholder="메시지를 입력하세요..." autocomplete="off">
+        <button class="mic-btn" id="micBtn" onclick="alert('음성 인식을 시작합니다.')">
+            <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+        </button>
+        <button id="sendBtn" class="send-btn">
+            <svg viewBox="0 0 24 24" width="20" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
+        </button>
+    </footer>
 </div>
+
+<script>
+    const chatArea = document.getElementById('chatArea');
+    const userInput = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const menuBtn = document.getElementById('menuBtn');
+    const drawer = document.getElementById('drawer');
+    const overlay = document.getElementById('overlay');
+    const currentTitle = document.getElementById('currentTitle');
+    const progressWrapper = document.getElementById('progressWrapper');
+    const progressFill = document.getElementById('progressFill');
+    const currentTimeText = document.getElementById('currentTime');
+    const syncBtn = document.getElementById('syncBtn');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+
+    menuBtn.addEventListener('click', () => { drawer.classList.add('active'); overlay.classList.add('active'); });
+    overlay.addEventListener('click', () => { drawer.classList.remove('active'); overlay.classList.remove('active'); });
+    
+    function changeTitle(name) {
+        currentTitle.innerText = name;
+        drawer.classList.remove('active');
+        overlay.classList.remove('active');
+        addMessage(`'${name}' 컨텐츠로 전환되었습니다.`, 'agent');
+    }
+
+    function addMessage(text, sender) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message ${sender}`;
+        msgDiv.innerHTML = sender === 'agent' ? `<div class="avatar"></div><div class="bubble">${text}</div>` : `<div class="bubble">${text}</div>`;
+        chatArea.appendChild(msgDiv);
+        chatArea.scrollTop = chatArea.scrollHeight;
+    }
+
+    function handleSend() {
+        const text = userInput.value.trim();
+        if (text) {
+            addMessage(text, 'user');
+            userInput.value = '';
+            setTimeout(() => addMessage(`'${text}'에 대해 분석 중입니다...`, 'agent'), 800);
+        }
+    }
+    sendBtn.addEventListener('click', handleSend);
+    userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleSend(); });
+
+    let isDragging = false;
+    const totalSeconds = 7200;
+    function updateProgress(e) {
+        const rect = progressWrapper.getBoundingClientRect();
+        const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+        let percentage = Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100));
+        progressFill.style.width = percentage + '%';
+        const currentSeconds = (percentage / 100) * totalSeconds;
+        const h = Math.floor(currentSeconds / 3600).toString().padStart(2, '0');
+        const m = Math.floor((currentSeconds % 3600) / 60).toString().padStart(2, '0');
+        const s = Math.floor(currentSeconds % 60).toString().padStart(2, '0');
+        currentTimeText.innerText = `${h}:${m}:${s}`;
+    }
+    progressWrapper.addEventListener('mousedown', (e) => { isDragging = true; updateProgress(e); });
+    window.addEventListener('mousemove', (e) => { if (isDragging) updateProgress(e); });
+    window.addEventListener('mouseup', () => isDragging = false);
+    progressWrapper.addEventListener('touchstart', (e) => { isDragging = true; updateProgress(e); });
+    window.addEventListener('touchmove', (e) => { if (isDragging) updateProgress(e); });
+    window.addEventListener('touchend', () => isDragging = false);
+
+    syncBtn.addEventListener('click', () => alert('현재 시청 중인 기기와 동기화되었습니다.'));
+
+    let isPlaying = false;
+    playPauseBtn.addEventListener('click', () => {
+        isPlaying = !isPlaying;
+        document.getElementById('playIcon').style.display = isPlaying ? 'none' : 'block';
+        document.getElementById('pauseIcon').style.display = isPlaying ? 'block' : 'none';
+    });
+</script>
 
 </body>
 </html>
