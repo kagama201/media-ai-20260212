@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>캐릭터 설정 - 에이전트 서비스</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
@@ -14,12 +14,12 @@
             --border-color: #eee;
         }
 
-        body { font-family: 'Noto Sans KR', sans-serif; margin: 0; background-color: #e0e0e0; display: flex; justify-content: center; overflow: hidden; }
+        body { font-family: 'Noto Sans KR', sans-serif; margin: 0; background-color: #e0e0e0; display: flex; justify-content: center; height: 100vh; overflow: hidden; }
         
         .mobile-container { 
             width: 100%; 
             max-width: 420px; 
-            height: 100vh; 
+            height: 100%; 
             background-color: var(--white); 
             display: flex; 
             flex-direction: column; 
@@ -48,12 +48,14 @@
         }
         .header-title { flex: 1; text-align: center; font-size: 18px; font-weight: 700; margin-right: 40px; }
 
+        /* 설정 영역: 스크롤 최적화 */
         .setup-section { 
             flex: 1; 
             display: flex; 
             flex-direction: column; 
             padding: 20px; 
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
         .section-ai { background-color: var(--white); border-bottom: 4px solid var(--bg-color); }
         .section-user { background-color: var(--bg-color); }
@@ -83,7 +85,14 @@
             outline: none;
         }
 
-        .footer-btn-area { padding: 16px; background: var(--white); border-top: 1px solid var(--border-color); }
+        /* 푸터 영역: 여백 2배 이상 확보 및 SafeArea 대응 */
+        .footer-btn-area { 
+            padding: 16px; 
+            padding-bottom: calc(32px + env(safe-area-inset-bottom)); /* 여백 2배 확보 */
+            background: var(--white); 
+            border-top: 1px solid var(--border-color); 
+            flex-shrink: 0;
+        }
         .save-btn {
             width: 100%;
             padding: 14px;
@@ -107,97 +116,93 @@
         <div class="header-title">캐릭터 설정</div>
     </header>
 
-    <section class="setup-section section-ai">
-        <div class="section-title">AI 캐릭터 설정 <span>상대방 성향</span></div>
-        
-        <div class="menu-row">
-            <div class="label">MBTI (16가지 유형)</div>
-            <select id="ai-mbti">
-                <option value="ISTJ">ISTJ - 현실주의자</option>
-                <option value="ISFJ">ISFJ - 수호자</option>
-                <option value="INFJ">INFJ - 예언자</option>
-                <option value="INTJ">INTJ - 전략가</option>
-                <option value="ISTP">ISTP - 장인</option>
-                <option value="ISFP">ISFP - 모험가</option>
-                <option value="INFP">INFP - 중재자</option>
-                <option value="INTP">INTP - 논리술사</option>
-                <option value="ESTP">ESTP - 사업가</option>
-                <option value="ESFP">ESFP - 연예인</option>
-                <option value="ENFP">ENFP - 활동가</option>
-                <option value="ENTP" selected>ENTP - 발명가</option>
-                <option value="ESTJ">ESTJ - 경영자</option>
-                <option value="ESFJ">ESFJ - 영사관</option>
-                <option value="ENFJ">ENFJ - 사회운동가</option>
-                <option value="ENTJ">ENTJ - 통치자</option>
-            </select>
-        </div>
+    <div style="flex: 1; overflow-y: auto;">
+        <section class="setup-section section-ai">
+            <div class="section-title">AI 캐릭터 설정 <span>상대방 성향</span></div>
+            <div class="menu-row">
+                <div class="label">MBTI (16가지 유형)</div>
+                <select id="ai-mbti">
+                    <option value="ISTJ">ISTJ - 현실주의자</option>
+                    <option value="ISFJ">ISFJ - 수호자</option>
+                    <option value="INFJ">INFJ - 예언자</option>
+                    <option value="INTJ">INTJ - 전략가</option>
+                    <option value="ISTP">ISTP - 장인</option>
+                    <option value="ISFP">ISFP - 모험가</option>
+                    <option value="INFP">INFP - 중재자</option>
+                    <option value="INTP">INTP - 논리술사</option>
+                    <option value="ESTP">ESTP - 사업가</option>
+                    <option value="ESFP">ESFP - 연예인</option>
+                    <option value="ENFP">ENFP - 활동가</option>
+                    <option value="ENTP" selected>ENTP - 발명가</option>
+                    <option value="ESTJ">ESTJ - 경영자</option>
+                    <option value="ESFJ">ESFJ - 영사관</option>
+                    <option value="ENFJ">ENFJ - 사회운동가</option>
+                    <option value="ENTJ">ENTJ - 통치자</option>
+                </select>
+            </div>
+            <div class="menu-row">
+                <div class="label">혈액형</div>
+                <select id="ai-blood">
+                    <option value="A">A형</option>
+                    <option value="B">B형</option>
+                    <option value="O" selected>O형</option>
+                    <option value="AB">AB형</option>
+                </select>
+            </div>
+            <div class="menu-row">
+                <div class="label">다정함 정도</div>
+                <select id="ai-kindness">
+                    <option value="상냥한">상냥한</option>
+                    <option value="조금다정한" selected>조금 다정함</option>
+                    <option value="조금차가운">조금 차가움</option>
+                    <option value="냉정함">냉정함</option>
+                </select>
+            </div>
+        </section>
 
-        <div class="menu-row">
-            <div class="label">혈액형</div>
-            <select id="ai-blood">
-                <option value="A">A형</option>
-                <option value="B">B형</option>
-                <option value="O" selected>O형</option>
-                <option value="AB">AB형</option>
-            </select>
-        </div>
-
-        <div class="menu-row">
-            <div class="label">다정함 정도</div>
-            <select id="ai-kindness">
-                <option value="상냥한">상냥한</option>
-                <option value="조금다정한" selected>조금 다정함</option>
-                <option value="조금차가운">조금 차가움</option>
-                <option value="냉정함">냉정함</option>
-            </select>
-        </div>
-    </section>
-
-    <section class="setup-section section-user">
-        <div class="section-title">나의 캐릭터 설정 <span>나의 프로필</span></div>
-        
-        <div class="menu-row">
-            <div class="label">MBTI (16가지 유형)</div>
-            <select id="user-mbti">
-                <option value="ISTJ">ISTJ - 현실주의자</option>
-                <option value="ISFJ">ISFJ - 수호자</option>
-                <option value="INFJ">INFJ - 예언자</option>
-                <option value="INTJ">INTJ - 전략가</option>
-                <option value="ISTP">ISTP - 장인</option>
-                <option value="ISFP">ISFP - 모험가</option>
-                <option value="INFP" selected>INFP - 중재자</option>
-                <option value="INTP">INTP - 논리술사</option>
-                <option value="ESTP">ESTP - 사업가</option>
-                <option value="ESFP">ESFP - 연예인</option>
-                <option value="ENFP">ENFP - 활동가</option>
-                <option value="ENTP">ENTP - 발명가</option>
-                <option value="ESTJ">ESTJ - 경영자</option>
-                <option value="ESFJ">ESFJ - 영사관</option>
-                <option value="ENFJ">ENFJ - 사회운동가</option>
-                <option value="ENTJ">ENTJ - 통치자</option>
-            </select>
-        </div>
-
-        <div class="menu-row">
-            <div class="label">혈액형</div>
-            <select id="user-blood">
-                <option value="A" selected>A형</option>
-                <option value="B">B형</option>
-                <option value="O">O형</option>
-                <option value="AB">AB형</option>
-            </select>
-        </div>
-
-        <div class="menu-row">
-            <div class="label">다정함 정도</div>
-            <select id="user-kindness">
-                <option value="상냥한">상냥한</option>
-                <option value="조금다정한">조금 다정함</option>
-                <option value="조금차가운" selected>조금 차가움</option>
-                <option value="냉정함">냉정함</option>
-            </select>
-        </div>
-    </section>
+        <section class="setup-section section-user">
+            <div class="section-title">나의 캐릭터 설정 <span>나의 프로필</span></div>
+            <div class="menu-row">
+                <div class="label">MBTI (16가지 유형)</div>
+                <select id="user-mbti">
+                    <option value="ISTJ">ISTJ - 현실주의자</option>
+                    <option value="ISFJ">ISFJ - 수호자</option>
+                    <option value="INFJ">INFJ - 예언자</option>
+                    <option value="INTJ">INTJ - 전략가</option>
+                    <option value="ISTP">ISTP - 장인</option>
+                    <option value="ISFP">ISFP - 모험가</option>
+                    <option value="INFP" selected>INFP - 중재자</option>
+                    <option value="INTP">INTP - 논리술사</option>
+                    <option value="ESTP">ESTP - 사업가</option>
+                    <option value="ESFP">ESFP - 연예인</option>
+                    <option value="ENFP">ENFP - 활동가</option>
+                    <option value="ENTP">ENTP - 발명가</option>
+                    <option value="ESTJ">ESTJ - 경영자</option>
+                    <option value="ESFJ">ESFJ - 영사관</option>
+                    <option value="ENFJ">ENFJ - 사회운동가</option>
+                    <option value="ENTJ">ENTJ - 통치자</option>
+                </select>
+            </div>
+            <div class="menu-row">
+                <div class="label">혈액형</div>
+                <select id="user-blood">
+                    <option value="A" selected>A형</option>
+                    <option value="B">B형</option>
+                    <option value="O">O형</option>
+                    <option value="AB">AB형</option>
+                </select>
+            </div>
+            <div class="menu-row">
+                <div class="label">다정함 정도</div>
+                <select id="user-kindness">
+                    <option value="상냥한">상냥한</option>
+                    <option value="조금다정한">조금 다정함</option>
+                    <option value="조금차가운" selected>조금 차가움</option>
+                    <option value="냉정함">냉정함</option>
+                </select>
+            </div>
+        </section>
+    </div>
 
     <div class="footer-btn-area">
         <button class="save-btn" onclick="saveSettings()">설정 저장하기</button>
